@@ -13,7 +13,7 @@
 
     <template slot="leftLinks">
       <top-navbar-link
-        tag="router-link"
+        :routerLink="true"
         to="/"
         :active="currentPath === '/'"
       >
@@ -21,15 +21,45 @@
       </top-navbar-link>
 
       <top-navbar-link
-        tag="router-link"
+        :routerLink="true"
         to="/about"
         :active="currentPath === '/about'"
       >
         About
       </top-navbar-link>
     </template>
+
+    <div class="nav-item dropdown ml-auto">
+      <a class="nav-link dropdown-toggle user-dropdown" href="#" data-toggle="dropdown">
+        <icon type="solid" name="fa-user-circle" />
+        User Name
+      </a>
+      <div class="dropdown-menu">
+        <router-link to="/settings" class="dropdown-item">
+          <icon type="solid" name="fa-cog" />
+          Settings
+        </router-link>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" href="/logout">
+          <icon type="solid" name="fa-sign-out-alt" />
+          Logout
+        </a>
+      </div>
+    </div>
   </top-navbar>
 </template>
+
+<style lang="scss" scoped>
+$user-dropdown-color: #555555;
+
+.user-dropdown {
+  color: $user-dropdown-color;
+
+  &:hover, &:focus {
+    color: darken($user-dropdown-color, 12%);
+  }
+}
+</style>
 
 <script>
 import { mapState, mapActions } from 'vuex';
