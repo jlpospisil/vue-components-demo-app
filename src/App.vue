@@ -15,21 +15,6 @@
   </div>
 </template>
 
-<style lang="scss">
-@import '~@cdpjs/vue-components/src/scss/variables';
-
-#app {
-  #app-content {
-    min-height: 100vh;
-    padding: 75px 25px;
-
-    &.side-nav-open {
-      padding-left: $side-nav-width + 25px;
-    }
-  }
-}
-</style>
-
 <script>
 import { mapState } from 'vuex';
 import { ApplicationContent } from '@cdpjs/vue-components';
