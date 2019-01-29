@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "npx concurrently --kill-others \"npm run serve:api\" \"npm run serve:app\"",
+    "serve:api": "npx json-server --watch api/index.js --routes api/routes.json --port 4000",
+    "serve:app": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit"

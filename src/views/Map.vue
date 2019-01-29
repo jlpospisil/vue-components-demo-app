@@ -5,7 +5,36 @@
   >
     <split-pane horizontal>
       <google-map>
+        <template slot-scope="{ google, map }">
+          <map-polygon
+            v-for="polygon in visiblePolygons"
+            :key="polygon.id"
+            :paths="polygon.paths"
+            :google="google"
+            :map="map"
+            :options="{
+             id: polygon.id,
+             strokeColor: polygon.color,
+             fillColor: polygon.color,
+            }"
+            @click="showInfoWindow"
+          />
 
+          <info-window
+            :google="google"
+            :map="map"
+            :visible="infoWindow.visible"
+            :position="infoWindow.position"
+            @closed="infoWindowClosed"
+          >
+            <template v-if="selectedPolygon">
+              <div slot="title">{{ selectedPolygon.id.toUpperCase() }}</div>
+              <div>
+                You clicked on the {{ selectedPolygon.id.toUpperCase() }} polygon
+              </div>
+            </template>
+          </info-window>
+        </template>
       </google-map>
 
       <div class="map-info">
@@ -41,16 +70,52 @@
 
 <script>
 import { mapState } from 'vuex';
-import { ApplicationContent, GoogleMap, SplitPane } from '@cdpjs/vue-components';
+import { ApplicationContent, SplitPane, GoogleMap, InfoWindow, MapPolygon } from '@cdpjs/vue-components';
 
 export default {
   components: {
     ApplicationContent,
     GoogleMap,
+    InfoWindow,
+    MapPolygon,
     SplitPane,
+  },
+  data() {
+    return {
+      polygons: {
+        states: [],
+      },
+      level: 'states',
+      selectedPolygon: null,
+      infoWindow: {
+        position: {
+          lat: 38,
+          lng: -99,
+        },
+        visible: false,
+      },
+    };
   },
   computed: {
     ...mapState(['sideNav']),
+
+    visiblePolygons() {
+      const { level, polygons } = this;
+      const { [level]: visiblePolygons } = polygons;
+      return visiblePolygons;
+    },
+  },
+  methods: {
+    infoWindowClosed() {
+      this.selectedPolygon = null;
+      this.infoWindow.visible = false;
+    },
+    showInfoWindow(polygon) {
+      const { id, center } = polygon;
+      this.selectedPolygon = { id };
+      this.infoWindow.position = center;
+      this.infoWindow.visible = true;
+    },
   },
 };
 </script>
