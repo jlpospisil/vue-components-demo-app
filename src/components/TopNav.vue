@@ -13,7 +13,7 @@
 
     <template slot="leftLinks">
       <top-navbar-link
-        :routerLink="true"
+        router-link
         to="/"
         :active="currentPath === '/'"
       >
@@ -21,11 +21,19 @@
       </top-navbar-link>
 
       <top-navbar-link
-        :routerLink="true"
+        router-link
         to="/about"
         :active="currentPath === '/about'"
       >
         About
+      </top-navbar-link>
+
+      <top-navbar-link
+        router-link
+        to="/map"
+        :active="currentPath === '/map'"
+      >
+        Map
       </top-navbar-link>
     </template>
 

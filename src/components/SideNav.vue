@@ -16,7 +16,7 @@
             type: 'solid',
             name: 'fa-home',
           }"
-          :routerLink="true"
+          router-link
           to="/"
         />
 
@@ -26,8 +26,18 @@
             type: 'solid',
             name: 'fa-info',
           }"
-          :routerLink="true"
+          router-link
           to="/about"
+        />
+
+        <side-nav-link
+          label="Map Example"
+          :icon="{
+            type: 'solid',
+            name: 'fa-map',
+          }"
+          router-link
+          to="/map"
         />
       </side-nav-group>
     </div>
