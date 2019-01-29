@@ -10,7 +10,9 @@
       :class="{ 'side-nav-open': sideNav.open }"
       :leftSideNavOpen="sideNav.open"
     >
-      <router-view/>
+      <transition name="fade" mode="out-in">
+        <router-view :key="$route.path"></router-view>
+      </transition>
     </application-content>
   </div>
 </template>
