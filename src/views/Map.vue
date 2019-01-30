@@ -14,8 +14,8 @@
             :map="map"
             :options="{
              id: polygon.id,
-             strokeColor: getPolygonColor(polygon.id),
-             fillColor: getPolygonColor(polygon.id),
+             strokeColor: getStatePolygonColor(polygon.id),
+             fillColor: getStatePolygonColor(polygon.id),
             }"
             @click="showInfoWindow"
           />
@@ -37,7 +37,7 @@
         </template>
       </google-map>
 
-      <div class="map-info">
+      <div class="map-info" splitpanes-min="10" splitpanes-max="70">
         <template v-if="selectedPolygonCensusData">
           <h4>{{ selectedPolygonCensusData.State }} Information</h4>
 
@@ -96,8 +96,9 @@ import axios from 'axios';
 import {
   ApplicationContent, SplitPane, GoogleMap, InfoWindow, MapPolygon,
 } from '@cdpjs/vue-components';
+import { ColorScale } from '../helpers/maps';
 
-const stateColors = {};
+const statePolygonColors = {};
 
 export default {
   name: 'MapView',
@@ -116,6 +117,7 @@ export default {
       censusData: {
         states: {},
       },
+      colorScales: {},
       level: 'states',
       selectedPolygon: null,
       infoWindow: {
@@ -143,51 +145,17 @@ export default {
     },
   },
   methods: {
-    getPolygonColor(id) {
-      if (stateColors[id]) {
-        return stateColors[id];
+    getStatePolygonColor(id) {
+      if (!statePolygonColors[id]) {
+        const { states: statesColorScale } = this.colorScales;
+        const { Population: population } = this.censusData.states.populations[id] || {};
+        statePolygonColors[id] = statesColorScale.getColor(population);
       }
 
-      const { calculateColor } = this;
-      const { populations, minPopulation, maxPopulation } = this.censusData.states;
-      const populationData = populations[id];
-      const { Population: population } = populationData || {};
-      const percentage = population ? (population - minPopulation) / (maxPopulation - minPopulation) : 0;
-      stateColors[id] = calculateColor(percentage);
-
-      return stateColors[id];
-    },
-    calculateColor(pct) {
-      const percentColors = [
-        { pct: 0.0, color: { r: 0xff, g: 0xf5, b: 0x9d } }, // #FFF59D
-        { pct: 0.3, color: { r: 0xfb, g: 0x8c, b: 0 } }, // #FB8C00
-        { pct: 1.0, color: { r: 0xc6, g: 0x28, b: 0x28 } }, // #c62828
-      ];
-
-      let i;
-
-      for (i = 1; i < percentColors.length - 1; i++) {
-        if (pct < percentColors[i].pct) {
-          break;
-        }
-      }
-
-      const lower = percentColors[i - 1];
-      const upper = percentColors[i];
-      const range = upper.pct - lower.pct;
-      const rangePct = (pct - lower.pct) / range;
-      const pctLower = 1 - rangePct;
-      const pctUpper = rangePct;
-      const color = {
-        r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
-        g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
-        b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper),
-      };
-
-      return `rgb(${[color.r, color.g, color.b].join(',')})`;
+      return statePolygonColors[id];
     },
     getStateCensusData() {
-      axios.get('/census-data').then((response) => {
+      return axios.get('/census-data').then((response) => {
         if (response.data && Array.isArray(response.data)) {
           const populations = response.data.reduce((obj, state) => {
             const { id } = state;
@@ -207,12 +175,13 @@ export default {
             return (Population > max) ? Population : max;
           }, -1);
 
+          Vue.set(this.colorScales, 'states', new ColorScale({ min: minPopulation, max: maxPopulation }));
           Vue.set(this.censusData, 'states', { populations, minPopulation, maxPopulation });
         }
       });
     },
     getStatePolygons() {
-      axios.get('/polygons/states').then((response) => {
+      return axios.get('/polygons/states').then((response) => {
         if (response.data && Array.isArray(response.data)) {
           Vue.set(this.polygons, 'states', response.data);
         }
@@ -231,8 +200,8 @@ export default {
   },
   mounted() {
     const { getStateCensusData, getStatePolygons } = this;
-    getStateCensusData();
-    getStatePolygons();
+    // Make sure to get census data first, because this is where the ColorScale is initialized
+    getStateCensusData().then(getStatePolygons);
   },
 };
 </script>
