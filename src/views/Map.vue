@@ -4,10 +4,11 @@
     :leftSideNavOpen="sideNav.open"
   >
     <split-pane horizontal watch-slots>
-      <google-map>
+      <google-map splitpanes-default="75">
         <template slot-scope="{ google, map }">
           <map-polygon
             v-for="polygon in visiblePolygons"
+            ref="visiblePolygons"
             :key="polygon.id"
             :paths="polygon.points"
             :google="google"
@@ -32,12 +33,21 @@
               <div>
                 You clicked on the {{ selectedPolygon.id.toUpperCase() }} polygon
               </div>
+              <div class="mt-3" v-show="nextLevel">
+                <button-item
+                  icon_type="solid"
+                  icon="fa-search-plus"
+                  text="Zoom In"
+                  class="btn-sm"
+                  onclick="zoomIn()"
+                />
+              </div>
             </template>
           </info-window>
         </template>
       </google-map>
 
-      <div class="map-info" splitpanes-min="10" splitpanes-max="70">
+      <div class="map-info" splitpanes-default="25" splitpanes-min="10" splitpanes-max="70">
         <template v-if="selectedPolygonCensusData">
           <h4>{{ selectedPolygonCensusData.State }} Information</h4>
 
@@ -77,6 +87,7 @@
   height: 100vh;
   width: calc(100vw + 50px);
   margin: -1 * $app-content-padding;  /* negate application-content padding */
+  padding-bottom: 0;
 
   .map-container {
     width: 100%;
@@ -94,7 +105,7 @@ import Vue from 'vue';
 import { mapState } from 'vuex';
 import axios from 'axios';
 import {
-  ApplicationContent, SplitPane, GoogleMap, InfoWindow, MapPolygon,
+  ApplicationContent, SplitPane, GoogleMap, InfoWindow, MapPolygon, ButtonItem,
 } from '@cdpjs/vue-components';
 import { ColorScale } from '../helpers/maps';
 
@@ -108,17 +119,21 @@ export default {
     InfoWindow,
     MapPolygon,
     SplitPane,
+    ButtonItem,
   },
   data() {
     return {
       polygons: {
         states: [],
+        counties: [],
       },
       censusData: {
         states: {},
+        counties: {},
       },
       colorScales: {},
       level: 'states',
+      levels: ['states', 'counties'],
       selectedPolygon: null,
       infoWindow: {
         position: {
@@ -142,6 +157,14 @@ export default {
       const { censusData, selectedPolygon } = this;
       const { populations } = censusData.states;
       return selectedPolygon ? populations[selectedPolygon.id] : null;
+    },
+
+    nextLevel() {
+      const { level, levels } = this;
+      const currentIndex = levels.indexOf(level);
+      return currentIndex !== -1 && currentIndex < levels.length - 1
+        ? levels[currentIndex + 1]
+        : null;
     },
   },
   methods: {
@@ -197,11 +220,41 @@ export default {
       this.infoWindow.position = center;
       this.infoWindow.visible = true;
     },
+    zoomIn() {
+      const { nextLevel } = this;
+      const { id: selectedPolygonId } = this.selectedPolygon;
+
+      console.log({ selectedPolygonId });
+
+      if (nextLevel) {
+        // TODO: retrieve next level census data and polygons
+        // TODO: Remove current polygons, Add new polygons, and adjust zoom
+
+        this.level = nextLevel;
+      }
+    },
+    zoomOut() {
+      const { previousLevel } = this;
+      const { id: selectedPolygonId } = this.selectedPolygon;
+
+      console.log({ selectedPolygonId });
+
+      if (previousLevel) {
+        // TODO: Remove current polygons, Add new polygons, and adjust zoom
+
+        this.level = previousLevel;
+      }
+    },
   },
   mounted() {
-    const { getStateCensusData, getStatePolygons } = this;
+    const { getStateCensusData, getStatePolygons, zoomIn } = this;
+
     // Make sure to get census data first, because this is where the ColorScale is initialized
     getStateCensusData().then(getStatePolygons);
+
+    // Add methods that are called within the info window to the window
+    //  since that is the only way they are available
+    window.zoomIn = zoomIn;
   },
 };
 </script>
