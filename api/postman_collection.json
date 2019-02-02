@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "dea783b6-81f0-41fe-97a4-1fef1f3c9d98",
-		"name": "Google Maps React",
+		"_postman_id": "e4cb91b6-ba18-4f18-8e33-69627dfc3c3f",
+		"name": "Map Polygons Fake API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -88,6 +88,30 @@
 						"polygons",
 						"states",
 						"{{state_abbr}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/polygons/states/{{state_abbr}}/counties",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{host}}/polygons/states/{{state_abbr}}/counties",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"polygons",
+						"states",
+						"{{state_abbr}}",
+						"counties"
 					]
 				}
 			},

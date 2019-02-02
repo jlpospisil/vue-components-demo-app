@@ -1,4 +1,5 @@
 {
   "/polygons/states": "/statePolygons",
-  "/polygons/states/:id": "/statePolygons/:id"
+  "/polygons/states/:id": "/statePolygons/:id",
+  "/polygons/states/:id/counties": "/statePolygons/:id/countyPolygons"
 }
