@@ -9,6 +9,7 @@
           disableDefaultUI: true,
         }"
         splitpanes-default="75"
+        @ready="mapReady"
       >
         <template slot-scope="{ google, map }">
           <template v-for="state in visiblePolygons">
@@ -130,6 +131,8 @@ export default {
   },
   data() {
     return {
+      google: null,
+      map: null,
       polygons: {
         states: [],
         counties: [],
@@ -175,6 +178,13 @@ export default {
     },
   },
   methods: {
+    getCountyPolygons(stateId) {
+      return axios.get(`/polygons/states/${stateId}/counties`).then((response) => {
+        if (response.data && Array.isArray(response.data)) {
+          Vue.set(this.polygons, 'counties', response.data);
+        }
+      });
+    },
     getStatePolygonColor(id) {
       if (!statePolygonColors[id]) {
         const { states: statesColorScale } = this.colorScales;
@@ -221,6 +231,10 @@ export default {
       this.selectedPolygon = null;
       this.infoWindow.visible = false;
     },
+    mapReady({ google, map }) {
+      Vue.set(this, 'google', google);
+      Vue.set(this, 'map', map);
+    },
     showInfoWindow(polygon) {
       const { id, center } = polygon;
       this.selectedPolygon = { id };
@@ -228,14 +242,13 @@ export default {
       this.infoWindow.visible = true;
     },
     zoomIn() {
-      const { nextLevel, infoWindowClosed } = this;
+      const { nextLevel, infoWindowClosed, getCountyPolygons, zoomMapToBounds } = this;
       const { id: selectedPolygonId } = this.selectedPolygon;
 
-      console.log({ selectedPolygonId });
-
       if (nextLevel) {
-        // TODO: retrieve next level census data and polygons
-        // TODO: Remove current polygons, Add new polygons, and adjust zoom
+        if (nextLevel === 'counties') {
+          getCountyPolygons(selectedPolygonId).then(zoomMapToBounds);
+        }
 
         infoWindowClosed();
         this.level = nextLevel;
@@ -243,15 +256,26 @@ export default {
     },
     zoomOut() {
       const { previousLevel } = this;
-      const { id: selectedPolygonId } = this.selectedPolygon;
-
-      console.log({ selectedPolygonId });
 
       if (previousLevel) {
         // TODO: Remove current polygons, Add new polygons, and adjust zoom
 
         this.level = previousLevel;
       }
+    },
+    zoomMapToBounds() {
+      const { visiblePolygons, map } = this;
+      const { maps } = this.google;
+      const points = visiblePolygons.flatMap(item => item.polygons).flat();
+      console.log({ points });
+
+      const bounds = new maps.LatLngBounds();
+
+      points.forEach(point => bounds.extend(point));
+
+      map.fitBounds(bounds);
+
+      console.log('TODO: zoom map to polygon bounds here');
     },
   },
   mounted() {
