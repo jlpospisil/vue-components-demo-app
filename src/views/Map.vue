@@ -4,7 +4,12 @@
     :leftSideNavOpen="sideNav.open"
   >
     <split-pane horizontal watch-slots>
-      <google-map splitpanes-default="75">
+      <google-map
+        :options="{
+          disableDefaultUI: true,
+        }"
+        splitpanes-default="75"
+      >
         <template slot-scope="{ google, map }">
           <map-polygon
             v-for="polygon in visiblePolygons"
