@@ -4,13 +4,22 @@
     :leftSideNavOpen="sideNav.open"
   >
     <button-item
-      class="btn-sm btn-zoom-out ml-3 mt-3"
+      class="btn-sm btn-map ml-3 mt-3"
       icon_type="solid"
       icon="fa-search-minus"
       text="Zoom Out"
       v-show="previousLevel"
       @click="zoomOut"
-      ></button-item>
+    />
+
+    <button-item
+      class="btn-sm btn-map ml-3 mt-3"
+      icon_type="solid"
+      icon=""
+      :text="`Show ${detailedStatePolygons ? 'Simple' : 'Detailed'}`"
+      v-show="level === 'states'"
+      @click="toggleStatePolygonDetailLevel"
+    />
 
     <split-pane horizontal watch-slots>
       <google-map
@@ -104,7 +113,7 @@
   margin: -1 * $app-content-padding;  /* negate application-content padding */
   padding-bottom: 0;
 
-  .btn-zoom-out {
+  .btn-map {
     position: absolute;
     z-index: 500;
   }
@@ -250,6 +259,7 @@ export default {
     },
     getStatePolygons() {
       const { detailedStatePolygons } = this;
+
       return axios.get(`/${detailedStatePolygons ? 'detailed-' : ''}polygons/states`).then((response) => {
         if (response.data && Array.isArray(response.data)) {
           Vue.set(this.polygons, 'states', response.data);
@@ -269,6 +279,13 @@ export default {
       this.selectedPolygon = { id };
       this.infoWindow.position = center;
       this.infoWindow.visible = true;
+    },
+    toggleStatePolygonDetailLevel() {
+      const { detailedStatePolygons, getStatePolygons, infoWindowClosed } = this;
+      this.detailedStatePolygons = !detailedStatePolygons;
+      Vue.set(this.polygons, 'states', []);
+      infoWindowClosed();
+      getStatePolygons();
     },
     zoomIn() {
       const { nextLevel, infoWindowClosed, getCountyPolygons, zoomMapToBounds } = this;
