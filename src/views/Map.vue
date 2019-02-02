@@ -3,11 +3,18 @@
     class="map-view-container"
     :leftSideNavOpen="sideNav.open"
   >
+    <button-item
+      class="btn-sm btn-zoom-out ml-3 mt-3"
+      icon_type="solid"
+      icon="fa-search-minus"
+      text="Zoom Out"
+      v-show="previousLevel"
+      @click="zoomOut"
+      ></button-item>
+
     <split-pane horizontal watch-slots>
       <google-map
-        :options="{
-          disableDefaultUI: true,
-        }"
+        :options="mapOptions"
         splitpanes-default="75"
         @ready="mapReady"
       >
@@ -97,6 +104,11 @@
   margin: -1 * $app-content-padding;  /* negate application-content padding */
   padding-bottom: 0;
 
+  .btn-zoom-out {
+    position: absolute;
+    z-index: 500;
+  }
+
   .map-container {
     width: 100%;
     height: 100%;
@@ -133,6 +145,14 @@ export default {
     return {
       google: null,
       map: null,
+      mapOptions: {
+        center: {
+          lat: 38,
+          lng: -99,
+        },
+        zoom: 4,
+        disableDefaultUI: true,
+      },
       polygons: {
         states: [],
         counties: [],
@@ -175,6 +195,12 @@ export default {
       return currentIndex !== -1 && currentIndex < levels.length - 1
         ? levels[currentIndex + 1]
         : null;
+    },
+
+    previousLevel() {
+      const { level, levels } = this;
+      const currentIndex = levels.indexOf(level);
+      return currentIndex > 0 ? levels[currentIndex - 1] : null;
     },
   },
   methods: {
@@ -255,27 +281,28 @@ export default {
       }
     },
     zoomOut() {
-      const { previousLevel } = this;
+      const { previousLevel, infoWindowClosed, zoomMapToBounds } = this;
 
       if (previousLevel) {
-        // TODO: Remove current polygons, Add new polygons, and adjust zoom
-
+        infoWindowClosed();
         this.level = previousLevel;
+        zoomMapToBounds();
       }
     },
     zoomMapToBounds() {
-      const { visiblePolygons, map } = this;
+      const { visiblePolygons, map, mapOptions, level } = this;
       const { maps } = this.google;
-      const points = visiblePolygons.flatMap(item => item.polygons).flat();
-      console.log({ points });
 
-      const bounds = new maps.LatLngBounds();
+      if (level === 'states') {
+        map.setOptions(mapOptions);
+      } else {
+        const bounds = new maps.LatLngBounds();
+        const points = visiblePolygons.flatMap(item => item.polygons).flat();
 
-      points.forEach(point => bounds.extend(point));
+        points.forEach(point => bounds.extend(point));
 
-      map.fitBounds(bounds);
-
-      console.log('TODO: zoom map to polygon bounds here');
+        map.fitBounds(bounds);
+      }
     },
   },
   mounted() {
