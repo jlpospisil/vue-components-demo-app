@@ -161,6 +161,7 @@ export default {
         states: {},
         counties: {},
       },
+      detailedStatePolygons: false,
       colorScales: {},
       level: 'states',
       levels: ['states', 'counties'],
@@ -205,7 +206,8 @@ export default {
   },
   methods: {
     getCountyPolygons(stateId) {
-      return axios.get(`/polygons/states/${stateId}/counties`).then((response) => {
+      const { detailedStatePolygons } = this;
+      return axios.get(`/${detailedStatePolygons ? 'detailed-' : ''}polygons/states/${stateId}/counties`).then((response) => {
         if (response.data && Array.isArray(response.data)) {
           Vue.set(this.polygons, 'counties', response.data);
         }
@@ -247,7 +249,8 @@ export default {
       });
     },
     getStatePolygons() {
-      return axios.get('/polygons/states').then((response) => {
+      const { detailedStatePolygons } = this;
+      return axios.get(`/${detailedStatePolygons ? 'detailed-' : ''}polygons/states`).then((response) => {
         if (response.data && Array.isArray(response.data)) {
           Vue.set(this.polygons, 'states', response.data);
         }
