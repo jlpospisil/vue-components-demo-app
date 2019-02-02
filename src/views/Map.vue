@@ -11,20 +11,22 @@
         splitpanes-default="75"
       >
         <template slot-scope="{ google, map }">
-          <map-polygon
-            v-for="polygon in visiblePolygons"
-            ref="visiblePolygons"
-            :key="polygon.id"
-            :paths="polygon.points"
-            :google="google"
-            :map="map"
-            :options="{
-             id: polygon.id,
-             strokeColor: getStatePolygonColor(polygon.id),
-             fillColor: getStatePolygonColor(polygon.id),
+          <template v-for="state in visiblePolygons">
+            <map-polygon
+              v-for="(polygon, polygonIndex) in state.polygons"
+              ref="visiblePolygons"
+              :key="`${state.id}-polygon-${polygonIndex}`"
+              :paths="polygon"
+              :google="google"
+              :map="map"
+              :options="{
+             id: state.id,
+             strokeColor: getStatePolygonColor(state.id),
+             fillColor: getStatePolygonColor(state.id),
             }"
-            @click="showInfoWindow"
-          />
+              @click="showInfoWindow"
+            />
+          </template>
 
           <info-window
             :google="google"

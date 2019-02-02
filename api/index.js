@@ -1,17 +1,30 @@
 const stateAbbreviations = require('./state-abbreviations.json');
-const statePolygonData = require('./state-polygons.json');
+const statePolygonData = require('./us-states.json');
 const statePopulationData = require('./state-populations.json');
 
-const statePolygons  = Object.keys(statePolygonData).map((state) => {
-  const stateInfo = stateAbbreviations.find((info) => info.name.toLowerCase() === state.toLowerCase());
+const statePolygons = statePolygonData.features.map((state) => {
+  const { NAME: stateName } = state.properties;
+  const stateInfo = stateAbbreviations.find((info) => info.name.toLowerCase() === stateName.toLowerCase());
   const { abbreviation: id } = stateInfo || {};
-  const { Coordinates: points=[] } = statePolygonData[state] || {};
+  let { coordinates } = state.geometry || { coordinates: [] };
+  const { type } = state.geometry || {};
 
   if (!id) return null;
 
+  if (type === 'MultiPolygon') {
+    coordinates = [].concat(...coordinates);
+  }
+
   return {
     id,
-    points,
+    polygons: coordinates.map(polygon => polygon.map(point => ({
+      lat: point[1],
+      lng: point[0],
+    }))),
+    // points: coordinates.map(point => ({
+    //   lat: point[1],
+    //   lng: point[0],
+    // })),
   };
 })
   .filter(state => state !== null);
