@@ -226,7 +226,7 @@ export default {
       this.infoWindow.visible = true;
     },
     zoomIn() {
-      const { nextLevel } = this;
+      const { nextLevel, infoWindowClosed } = this;
       const { id: selectedPolygonId } = this.selectedPolygon;
 
       console.log({ selectedPolygonId });
@@ -235,6 +235,7 @@ export default {
         // TODO: retrieve next level census data and polygons
         // TODO: Remove current polygons, Add new polygons, and adjust zoom
 
+        infoWindowClosed();
         this.level = nextLevel;
       }
     },
