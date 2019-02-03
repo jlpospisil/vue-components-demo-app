@@ -15,7 +15,7 @@
     <button-item
       class="btn-sm btn-map ml-3 mt-3"
       icon_type="solid"
-      icon=""
+      :icon="`${detailedStatePolygons ? 'fa-globe' : 'fa-globe-americas'}`"
       :text="`Show ${detailedStatePolygons ? 'Simple' : 'Detailed'}`"
       v-show="level === 'states'"
       @click="toggleStatePolygonDetailLevel"
